@@ -1,0 +1,122 @@
+#!/usr/bin/env jruby
+require "net/http"
+require "fileutils"
+require "oga"
+
+BASE_URL = "http://eur-lex.europa.eu/legal-content/en/ALL/?uri="
+DEFAULT_LETTERS = ['D','L','R','M']
+DEFAULT_START_NUMBER = 0
+DEFAULT_END_NUMBER = 9999
+NR_THREADS = 10
+
+FETCH_PAGE_TIMEOUT_IN_SEC = 60
+MAX_TIMEOUT_ATTEMPTS = 10
+MAX_EXCEPTION_ATTEMPTS = 3
+
+TIMEOUT_INTERVAL_RETRY = 60
+TIMEOUT_INTERVAL_EXCEPTION = 60
+
+require_relative "../lib/eurlex-fetcher"
+
+verb = ARGV.shift
+
+def help
+  puts "Usage: java -jar scraper.jar <VERB> <OPTIONS>"
+  puts
+  puts "Scrape: java -jar scraper.jar scrape <YEAR> <OPTIONAL LETTERS> <OPTIONAL START_NUMBER END_NUMBER>"
+  puts "  Example: scrape all default letters for 2014"
+  puts "  java -jar scraper.jar scrape 2014"
+  puts
+  puts "  Example: scrape all only R and M letters for 2014"
+  puts "  java -jar scraper.jar scrape 2014 R M"
+  puts "  Example: scrape all only the R letter for 2014, custom range"
+  puts "  java -jar scraper.jar scrape 2014 R 100 200" 
+  puts
+  puts "Process: java -jar scraper.jar process <YEAR> <OPTIONAL LETTERS> <OPTIONAL START_NUMBER END_NUMBER> <OUTPUT FILE>"
+  puts "  Note the required output file. Same filters as for scrape command apply"
+end
+
+def get_year_from_args
+  year_str = ARGV.shift
+  year = year_str.to_i
+  if year < 1950 || year > Time.now.year
+    puts "Illegal year (#{year_str}) given!"
+    puts
+    help
+    exit 1
+  end
+  year
+end
+
+def get_numbers_from_args
+  start_number = DEFAULT_START_NUMBER
+  end_number   = DEFAULT_END_NUMBER
+  if ARGV.length >= 2
+    last = ARGV[-1]
+    one_but_last = ARGV[-2]
+
+    if last.match(/^\d+$/) && one_but_last.match(/^\d+$/)
+      end_number = ARGV.pop.to_i
+      start_number = ARGV.pop.to_i
+    end
+
+    if start_number > end_number
+      puts "End number smaller than start number!"
+      exit
+    end
+  end
+
+  start_number..end_number
+end
+
+def get_letters_from_args
+  letters = if ARGV.length > 0
+              ARGV
+            else
+              DEFAULT_LETTERS
+            end
+
+  letters.each do |letter|
+    if letter.length > 1
+      puts "Letter should be one letter! #{letter} is illegal"
+      puts
+      help
+      exit 1
+    end
+  end
+end
+
+if verb.nil?
+  help
+  exit 1
+end
+
+if verb == "scrape"
+  year = get_year_from_args
+  numbers = get_numbers_from_args
+  letters = get_letters_from_args
+
+  Scraper.scrape!(year, letters, numbers)
+  exit
+end
+
+if verb == "process"
+  if ARGV.length < 2
+    $stderr.puts "Process requires at least two arguments!"
+    help
+    exit 1
+  end
+
+  to_file = ARGV.pop
+  year = get_year_from_args
+  numbers = get_numbers_from_args
+  letters = get_letters_from_args
+
+  Processor.process!(to_file, year, letters, numbers)
+  exit
+end
+
+puts "Unknown verb #{verb}"
+puts
+help
+exit 1

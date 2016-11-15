@@ -1,0 +1,4 @@
+scraper.jar
+*.csv
+data/
+.gems

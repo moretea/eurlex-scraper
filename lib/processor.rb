@@ -49,6 +49,9 @@ class Processor
       end
     end
 
+    found_documents = nil
+    not_found_documents = nil
+
     length = work_queue.size
     processor = Thread.new { process_thread(length, csv_lines, output_file) }
 

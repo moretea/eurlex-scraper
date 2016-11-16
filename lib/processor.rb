@@ -5,9 +5,9 @@ class Processor
 
   def self.get_number_of_cores
      if RbConfig::CONFIG["target_os"] =~ /mingw|mswin/
-       require 'jruby-win32ole'
-       result = WIN32OLE.connect("winmgmts://").ExecQuery("select NumberOfLogicalProcessors from Win32_Processor")
-       result.to_enum.collect(&:NumberOfLogicalProcessors).reduce(:+)
+       cores = ENV["NUMBER_OF_PROCESSORS"].to_i
+       p [:windows_cores, cores]
+       cores
      else
       File.read("/proc/cpuinfo").scan(/^processor/).size
      end
@@ -95,7 +95,7 @@ class Processor
         exit 1
       end
 
-      html = File.read(path)
+      html = File.read(path).force_encoding("UTF-8")
       document = Parser.parse_output(doc, html)
 
       result_queue.push document.as_csv_line

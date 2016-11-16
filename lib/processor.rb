@@ -2,9 +2,10 @@ class Processor
   def self.process!(output, year, letters, numbers_range)
     self.new(output, year, letters, numbers_range).process!
   end
+
   def self.get_number_of_cores
      if RbConfig::CONFIG["target_os"] =~ /mingw|mswin/
-       require 'win32ole'
+       require 'jruby-win32ole'
        result = WIN32OLE.connect("winmgmts://").ExecQuery("select NumberOfLogicalProcessors from Win32_Processor")
        result.to_enum.collect(&:NumberOfLogicalProcessors).reduce(:+)
      else

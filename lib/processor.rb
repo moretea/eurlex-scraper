@@ -42,6 +42,8 @@ class Processor
       else
         if ! not_found_documents.bsearch { |x| id <=> x }
           puts "Document #{doc.celex_id} has not been scraped yet! (It's neither in found.txt nor not-found.txt)"
+          puts "Rerun the scraper with the same filter parameters, to see if anything is missing."
+          puts "Alternatively, hack your way around, and add this number to the not-found.txt file"
           exit 1
         end
       end

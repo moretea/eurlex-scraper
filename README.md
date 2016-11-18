@@ -87,7 +87,7 @@ by the conservative amount of memory that a java process can use by default (256
 This can be solved by providing a JVM option to increase this limit.
 The following example sets this maximum to 4GB of RAM.
 
-    java -Xmx4G scraper.jar process ....
+    java -Xmx4G -jar scraper.jar process ....
 
 ## Development
 - Standard (j)ruby practises, bundler, warbler, etc.

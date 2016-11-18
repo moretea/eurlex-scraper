@@ -5,9 +5,7 @@ class Processor
 
   def self.get_number_of_cores
      if RbConfig::CONFIG["target_os"] =~ /mingw|mswin/
-       cores = ENV["NUMBER_OF_PROCESSORS"].to_i
-       p [:windows_cores, cores]
-       cores
+       ENV["NUMBER_OF_PROCESSORS"].to_i
      else
       File.read("/proc/cpuinfo").scan(/^processor/).size
      end

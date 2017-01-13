@@ -31,7 +31,7 @@ class Processor
 
     work_queue = Queue.new
     csv_lines = Queue.new
-
+    error_queue = Queue.new
 
     @filter_enumerator.each do |doc|
       id = doc.celex_id
@@ -55,7 +55,7 @@ class Processor
 
     workers = (1..Processor.get_number_of_cores).map do |worker|
       work_queue.push(nil)
-      Thread.new { worker_thread(work_queue, csv_lines) }
+      Thread.new { worker_thread(work_queue, csv_lines, error_queue) }
     end
 
     workers.each do |worker|
@@ -64,6 +64,22 @@ class Processor
 
     csv_lines.push(nil)
     processor.join
+
+    if !error_queue.empty?
+      msgs = ["#{error_queue.length} item(s) could not be processed!"]
+      while !error_queue.empty?
+        doc_number, err = error_queue.pop
+        msgs.push "- Document #{doc_number} failed because:"
+        msgs.push "  " + [err.to_s, err.backtrace].join("\n  ")
+      end
+
+      msg = msgs.join("\n")
+
+      error_file_name = File.basename(@output_file_name, ".*") + ".err.txt"
+      puts msg
+      File.write(error_file_name,msg)
+      puts "(this list is also written to file #{error_file_name})"
+    end
   end
 
   private
@@ -81,7 +97,7 @@ class Processor
     end
   end
 
-  def worker_thread(work_queue, result_queue)
+  def worker_thread(work_queue, result_queue, error_queue)
     Thread.current.abort_on_exception = true
 
     while celex_id = work_queue.pop
@@ -94,7 +110,11 @@ class Processor
       end
 
       html = File.read(path).force_encoding("UTF-8")
-      document = Parser.parse_output(doc, html)
+      begin
+        document = Parser.parse_output(doc, html)
+      rescue Exception => e
+        error_queue.push([celex_id, e])
+      end
 
       result_queue.push document.as_csv_line
     end

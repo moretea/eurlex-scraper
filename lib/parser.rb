@@ -28,10 +28,22 @@ module Parser
       info_from_div_boxes[title] = content
     end
 
-    doc.title = info_from_div_boxes["Title and reference"].gsub(/\s+/," ").strip
-    doc.author = info_from_div_boxes["Miscellaneous information"]["Author"]
-    doc.dircodes = (SPLIT_DIRCODES.match(info_from_div_boxes["Classifications"]["Directory code"]) || []).to_a
-    doc.form = info_from_div_boxes["Miscellaneous information"]["Form"]
+
+    doc.title = guarded_access "title and reference" do
+      info_from_div_boxes["Title and reference"]
+    end.gsub(/\s+/," ").strip
+
+    doc.author = guarded_access "Author" do
+      info_from_div_boxes["Miscellaneous information"]["Author"]
+    end
+
+    doc.dircodes = guarded_access "Directory code" do
+      (SPLIT_DIRCODES.match(info_from_div_boxes["Classifications"]["Directory code"]) || []).to_a
+    end
+
+    doc.form = guarded_access "From" do
+      info_from_div_boxes["Miscellaneous information"]["Form"]
+    end
 
     text = (info_from_div_boxes["Text"] ||"").gsub(/\s+/," ")
     doc.has_text = text != ""
@@ -41,5 +53,13 @@ module Parser
     doc.sentences = found_sentences.map(&:strip).uniq
 
     doc
+  end
+
+  def self.guarded_access what, &block
+    begin
+      block.call
+    rescue Exception => e
+      raise "#{what} could not be found on the page (on Document information tab)"
+    end
   end
 end

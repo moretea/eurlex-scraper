@@ -12,7 +12,7 @@ class PotentialDoc < Struct.new(:year, :letter, :number, :retry_at, :attempts)
   end
 
   def celex_id
-    "3%d%s%04d" % [year, letter, number]
+    "5%d%s%04d" % [year, letter, number]
   end
 
   def cache_key
@@ -23,7 +23,7 @@ end
 
 class Document < Struct.new(:year, :letter, :number, :title, :has_text, :sentences, :dircodes, :form, :author)
   def celex_id
-    "3%d%s%04d" % [year, letter, number]
+    "5%d%s%04d" % [year, letter, number]
   end
 
   def as_csv_line

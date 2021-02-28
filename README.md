@@ -6,7 +6,7 @@ This repo contains two tools to scrape EURLEX and process publications:
 - A processor program, that processes the HTML and writes a CSV file.
 
 Each EURLEX publication has a unique identifier, the CELEX number.
-It consists of three components: `3YYYYLNNNN`, where `3` is fixed, `YYYY` denotes the year, `L` is
+It consists of three components: `PYYYYLNNNN`, where `P` is the document category (3=published legislation, 5=legislative proposals), `YYYY` denotes the year, `L` is
 a "letter", indicating what kind of publication it is, and `NNNN` is a unique number identifiying
 the publication within a year and kind of publication.
 

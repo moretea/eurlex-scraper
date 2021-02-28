@@ -1,10 +1,11 @@
 #!/usr/bin/env jruby
-require "net/http"
+require "net/https"
 require "fileutils"
 require "oga"
+require "pathname"
 
-BASE_URL = "http://eur-lex.europa.eu/legal-content/en/ALL/?uri="
-DEFAULT_LETTERS = ['D','L','R','M']
+BASE_URL = "https://eur-lex.europa.eu/legal-content/en/ALL/?uri="
+DEFAULT_LETTERS = ['PC']
 DEFAULT_START_NUMBER = 0
 DEFAULT_END_NUMBER = 9999
 NR_THREADS = 10
@@ -76,14 +77,16 @@ def get_letters_from_args
               DEFAULT_LETTERS
             end
 
-  letters.each do |letter|
-    if letter.length > 1
-      puts "Letter should be one letter! #{letter} is illegal"
-      puts
-      help
-      exit 1
-    end
-  end
+  ['PC']
+
+  #letters.each do |letter|
+  #  if letter.length > 1
+  #    puts "Letter should be one letter! #{letter} is illegal"
+  #    puts
+  #    help
+  #    exit 1
+  #  end
+  #end
 end
 
 if verb.nil?

@@ -3,7 +3,7 @@ class WorkQueue
     @mutex = Mutex.new
     @retries = [] # Docs that should be retries. Sorted on when they should be retried;
                   # first to be retried is first element in the list.
-    @enumerator = WorkQueue.build_enumerator(year, letters, numbers_range)
+    @enumerator = PlannedWorkEnumerator.new(year, letters.dup, numbers_range)
   end
 
   # Returns PotentialDocs, until all all options in the cartesian product letters # numbers
@@ -59,13 +59,26 @@ class WorkQueue
   end
 
   # Generate the cartisian product letters # numbers
-  def self.build_enumerator(year, letters, numbers)
-    Enumerator.new do |yielder|
-      letters.each do |letter|
-        numbers.each do |number|
-          yielder << PotentialDoc.new(year, letter, number, nil, 0)
-        end
+  class PlannedWorkEnumerator
+    def initialize year, letters, numbers
+      @year = year
+      @letters_todo = letters
+      @numbers_todo = numbers.to_a
+
+      @current_letter = @letters_todo.shift
+      @current_numbers = @numbers_todo.dup
+    end
+
+    def next
+      if @current_numbers.empty?
+        @current_letter = @letters_todo.shift
+        @current_numbers = @numbers_todo.dup
       end
+      
+      # no more work to be done!
+      return nil if @current_letter.nil?
+
+      PotentialDoc.new(@year, @current_letter, @current_numbers.shift, nil, 0)
     end
   end
 end

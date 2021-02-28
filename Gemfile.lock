@@ -29,6 +29,7 @@ GEM
 PLATFORMS
   java
   ruby
+  universal-java-1.8
 
 DEPENDENCIES
   jruby-win32ole
@@ -36,4 +37,4 @@ DEPENDENCIES
   warbler
 
 BUNDLED WITH
-   1.13.6
+   2.2.11

@@ -36,7 +36,11 @@ class TimePredictor
   end
 
   def percentage_completed
-    [0, ((processed.to_f) / @size.to_f) * 100].max
+    if processed == 0 && size == 0
+      return 0
+    end
+
+    [0, (processed.to_f) / @size.to_f* 100].max
   end
 
   private

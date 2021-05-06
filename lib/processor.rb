@@ -14,7 +14,7 @@ class Processor
   def initialize(output_file_name, year, letters, numbers_range)
     @root_dir = Pathname.new("data").join(year.to_s)
     @output_file_name = output_file_name
-    @filter_enumerator = WorkQueue.build_enumerator(year, letters, numbers_range)
+    @filter_enumerator = WorkQueue::PlannedWorkEnumerator.new(year, letters, numbers_range)
 
     if File.exists?(@output_file_name)
       puts "File already exists!"
@@ -23,6 +23,7 @@ class Processor
   end
 
   def process!
+    puts @output_file
     output_file = File.open(@output_file_name,"w")
     output_file.puts "celex_id, author, title, has_text, dircode_1, dircode_2, dircode_3, sentence_1, sentence_2, sentence_3, sentence_rest"
 
@@ -33,7 +34,8 @@ class Processor
     csv_lines = Queue.new
     error_queue = Queue.new
 
-    @filter_enumerator.each do |doc|
+    while doc = @filter_enumerator.next
+      break if doc.nil?
       id = doc.celex_id
       if found_documents.bsearch { |x| id <=> x }
         work_queue.push(id)
@@ -112,11 +114,10 @@ class Processor
       html = File.read(path).force_encoding("UTF-8")
       begin
         document = Parser.parse_output(doc, html)
+        result_queue.push document.as_csv_line
       rescue Exception => e
         error_queue.push([celex_id, e])
       end
-
-      result_queue.push document.as_csv_line
     end
   end
 end

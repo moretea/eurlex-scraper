@@ -28,6 +28,9 @@ module Parser
       info_from_div_boxes[title] = content
     end
 
+    require 'pry'
+    binding.pry
+
 
     doc.title = guarded_access "title and reference" do
       info_from_div_boxes["Title and reference"]
